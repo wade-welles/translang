@@ -23,4 +23,9 @@ func adder(a, b int) (sum int) {
 	return sum
 }
 
+//export is_blank
+func is_blank(str *C.char) bool {
+	return len(C.GoString(str)) == 0
+}
+
 func main() {}
