@@ -3,34 +3,41 @@ require 'benchmark'
 
 
 
-module Translang
+module Go
   extend FFI::Library
+  ffi_lib './translang.so'
 
-  def self.blank?(str) 
-    return str.empty?
+  # define class GoSlice to map to:
+  # C type struct { void *data; GoInt len; GoInt cap; }
+  class GoSlice < FFI::Struct
+    layout :data,  :pointer,
+           :len,   :long_long,
+           :cap,   :long_long 
+
   end
 
-  ffi_lib './translang.so'
+  # define class GoString to map:
+  # C type struct { const char *p; GoInt n; }
+  class GoString < FFI::Struct
+    layout :p,     :pointer,
+           :len,   :long_long
+    def initialize(str) 
+      self[:p] = FFI::MemoryPointer.from_string(str) 
+      self[:len] = str.size
+      return self
+    end
+  end
+
   attach_function :hello_world, [], :void
-  attach_function :print_text, [:string], :void
+  attach_function :print, [:string], :void 
+  attach_function :greeter, [GoString.by_value], :void
   attach_function :adder, [:int, :int], :int
   attach_function :is_blank, [:string], :bool
 end
 
-Translang.hello_world
-Translang.print_text("test")
-sum = Translang.adder(1, 2)
+Go.hello_world
+Go.print("test")
+sum = Go.adder(1, 2)
 
-#"ruby is blank: #{Translang.blank?("test")}"
-#"go is blank: #{Translang.is_blank("test")}"
-
-
-
-Benchmark.bm 100 do |r| 
-  r.report "ruby" do 
-    Translang.blank?("test a really long sentence")
-  end 
-  r.report "go" do 
-    Translang.is_blank("test a really long sentence")
-  end 
-end
+test = Go::GoString.new("test")
+Go.greeter(test)

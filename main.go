@@ -11,9 +11,14 @@ func hello_world() {
 	fmt.Printf("hello world\n")
 }
 
-//export print_text
-func print_text(cstr *C.char) {
+//export print
+func print(cstr *C.char) {
 	fmt.Printf("%v\n", C.GoString(cstr))
+}
+
+//export greeter
+func greeter(cstr string) {
+	fmt.Printf("hello, %v\n", cstr)
 }
 
 //export adder
