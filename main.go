@@ -20,6 +20,15 @@ func adder(a, b int) (sum int) {
 }
 
 //export int_slice_size
-func int_slice_size(slice []int) int { return len(slice) }
+func int_slice_size(slice []int) int {
+	fmt.Printf("sum: %v\n", slice)
+	return len(slice)
+}
+
+//export str_slice_size
+func str_slice_size(slice []string) int {
+	fmt.Printf("sum: %v\n", slice)
+	return len(slice)
+}
 
 func main() {}
