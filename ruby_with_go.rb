@@ -3,6 +3,13 @@ require 'ffi'
 
 module Go
   extend FFI::Library
+  ffi_lib './go.so'
+
+  #module Functions
+  #  extend FFI::Library
+  #  ffi_lib './go.so'
+  #end
+
   class Slice < FFI::Struct
     layout :data,  :pointer,
            :len,   :long_long,
@@ -34,13 +41,22 @@ module Go
     #write_array_of_double
 
     def initialize(slice)
-      if slice[0].class == Integer
+      p "slice[0].class: #{slice[0].class}"
+      if slice[0].is_a?(Integer)
         self[:data] = FFI::MemoryPointer.new(:long_long, slice.size)
         self[:data].write_array_of_long_long(slice)
-      elsif slice[0].class == String
+      elsif slice[0].class.to_s == "String" # No idea why this works but without the to_s it does not
+        p "String"
         # Not working
-        self[:data] = FFI::MemoryPointer.new(:pointer, slice.size)
-        self[:data].write_array_of_char(slice)
+        #self[:data] = FFI::MemoryPointer.new(:pointer, slice.size)
+        #strings = Array.new 
+        #slice.size.times do |index|
+        #  strings << FFI::MemoryPointer.from_string(slice[index])
+        ##  strings << Go::String.new(slice[index]) 
+        #end
+        #self[:data].write_array_of_pointer(strings)
+      else 
+        p "else"
       end
       self[:len] = slice.size
       self[:cap] = slice.size 
@@ -65,16 +81,12 @@ module Go
     end
   end
 
-  module Functions
-    extend FFI::Library
-    ffi_lib './go.so'
-    attach_function :greeter, [String.value], :void
-    attach_function :int_slice_size, [Slice.value], :int
-    attach_function :str_slice_size, [Slice.value], :int
-  end
+  attach_function :greeter, [String.value], :void
+  attach_function :int_slice_size, [Slice.value], :int
+  attach_function :str_slice_size, [Slice.value], :int
 end
 
-Go::Functions.greeter(Go::String.new("test"))
+Go.greeter(Go::String.new("test"))
 
-p "size: #{Go::Functions.int_slice_size(Go::Slice.new([5, 3, 2]))}"
-p "size: #{Go::Functions.str_slice_size(Go::Slice.new(["one", "two"]))}"
+p "size: #{Go.int_slice_size(Go::Slice.new([5, 3, 2]))}"
+p "size: #{Go.str_slice_size(Go::Slice.new(["one", "two"]))}"
