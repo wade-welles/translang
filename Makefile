@@ -1,7 +1,7 @@
 # translang Makefile
 ###############################################################################
 #
-TARGET     = translang
+TARGET     = go
 DLIB       = $(TARGET).so
 CLEANOBJS  = *.o *.bak *.so *.h
 

@@ -1,15 +1,11 @@
 require 'ffi'
-require 'benchmark'
-
-
+#require 'benchmark'
 
 module Go
   extend FFI::Library
-  ffi_lib './translang.so'
-
   # define class GoSlice to map to:
   # C type struct { void *data; GoInt len; GoInt cap; }
-  class GoSlice < FFI::Struct
+  class Slice < FFI::Struct
     layout :data,  :pointer,
            :len,   :long_long,
            :cap,   :long_long 
@@ -18,9 +14,10 @@ module Go
 
   # define class GoString to map:
   # C type struct { const char *p; GoInt n; }
-  class GoString < FFI::Struct
+  class String < FFI::Struct
     layout :p,     :pointer,
            :len,   :long_long
+
     def initialize(str) 
       self[:p] = FFI::MemoryPointer.from_string(str) 
       self[:len] = str.size
@@ -28,16 +25,12 @@ module Go
     end
   end
 
-  attach_function :hello_world, [], :void
-  attach_function :print, [:string], :void 
-  attach_function :greeter, [GoString.by_value], :void
-  attach_function :adder, [:int, :int], :int
-  attach_function :is_blank, [:string], :bool
+  module Functions
+    extend FFI::Library
+    ffi_lib './go.so'
+    attach_function :greeter, [String.by_value], :void
+    attach_function :is_blank, [:string], :bool
+  end
 end
 
-Go.hello_world
-Go.print("test")
-sum = Go.adder(1, 2)
-
-test = Go::GoString.new("test")
-Go.greeter(test)
+Go::Functions.greeter(Go::String.new("test"))
