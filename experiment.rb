@@ -18,6 +18,10 @@ module Go
     layout :p,     :pointer,
            :len,   :long_long
 
+    def self.value 
+      return self.val 
+    end
+
     def initialize(str) 
       self[:p] = FFI::MemoryPointer.from_string(str) 
       self[:len] = str.size
@@ -28,7 +32,7 @@ module Go
   module Functions
     extend FFI::Library
     ffi_lib './go.so'
-    attach_function :greeter, [String.by_value], :void
+    attach_function :greeter, [String.value], :void
     attach_function :is_blank, [:string], :bool
   end
 end
